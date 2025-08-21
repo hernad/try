@@ -1,5 +1,10 @@
 #!/usr/bin/env ruby
 
+require 'io/console'
+require 'time'
+require 'fileutils'
+## Removed optparse; we'll manually parse CLI args
+
 class TrySelector
   TRY_PATH = ENV['TRY_PATH'] || File.expand_path("~/src/tries")
 
@@ -534,13 +539,6 @@ class TrySelector
   end
 end
 
-require 'io/console'
-require 'time'
-require 'fileutils'
-require 'tmpdir'
-
-
-
 # Main execution with OptionParser subcommands
 if __FILE__ == $0
 
@@ -581,7 +579,6 @@ if __FILE__ == $0
   end
 
   def print_global_help
-    script_path = File.expand_path($0)
     ui_print <<~HELP
       {h1}try something!{text}
 
@@ -590,7 +587,7 @@ if __FILE__ == $0
       this tool is not meant to be used directly,
       but added to your ~/.zshrc or ~/.bashrc:
 
-        {highlight}eval "$(#{script_path} init ~/src/tries)"{text}
+        {highlight}eval "$(#$0 init ~/src/tries)"{text}
 
       {h2}Usage:{text}
         init [--path PATH]  # Initialize shell function for aliasing
@@ -655,15 +652,8 @@ if __FILE__ == $0
     if result
       parts = []
       parts << "dir='#{result[:path]}'"
-      case result[:type]
-      when :mkdir
-        parts << "mkdir -p \"$dir\""
-        parts << "touch \"$dir\""
-      when :mkdir_and_clone
-        parts << "mkdir -p \"$dir\""
-        parts << "cd \"$dir\""
-        parts << "git clone '#{result[:git_url]}' ."
-      end
+      parts << "mkdir -p \"$dir\"" if result[:type] == :mkdir
+      parts << "touch \"$dir\""
       parts << "cd \"$dir\""
       puts parts.join(' && ')
     end
