@@ -119,7 +119,7 @@ class TrySelector
     score = 0.0
 
     # generally we are looking for default date-prefixed directories
-    if text.start_with?(/\d\d\d\d\-\d\d\-\d\d\-/) 
+    if text.start_with?(/\d\d\d\d\-\d\d\-\d\d\-/)
       score += 2.0
     end
 
