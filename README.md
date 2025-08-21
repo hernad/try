@@ -127,6 +127,16 @@ nix run github:tobi/try -- --help
 nix run github:tobi/try init ~/my-tries
 ```
 
+## Git Integration
+
+`try` now offers experimental integration with Git. You can quickly clone a Git repository into your `TRY_PATH` and immediately `try` it.
+
+```bash
+try git clone <repository-url>
+```
+
+This will clone the repository into a new directory within your `TRY_PATH` (e.g., `~/src/tries/2025-08-21-repo-name`) and then navigate you into it.
+
 ### Home Manager
 
 ```nix
@@ -182,14 +192,3 @@ MIT - Do whatever you want with it.
 *Built for developers with ADHD by developers with ADHD.*
 
 *Your experiments deserve a home.* 🏠
-
-## Testing
-
-This project uses Minitest for testing.
-To run the tests, you can use the following command:
-
-```bash
-nix run .#test
-```
-
-This will run the tests defined in the `test` directory.
