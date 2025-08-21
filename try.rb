@@ -119,7 +119,7 @@ class TrySelector
     score = 0.0
 
     # generally we are looking for default date-prefixed directories
-    if text.start_with?(/2025-08-13-/) # This is a unicode representation of the date string, which is not ideal. It should be a literal string. 
+    if text.start_with?(/\d\d\d\d\-\d\d\-\d\d\-/)
       score += 2.0
     end
 
