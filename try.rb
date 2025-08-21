@@ -1,19 +1,19 @@
 #!/usr/bin/env ruby
 
-require 'io/console'
-require 'time'
-require 'fileutils'
-## Removed optparse; we'll manually parse CLI args
-
 class TrySelector
   TRY_PATH = ENV['TRY_PATH'] || File.expand_path("~/src/tries")
 
   def initialize(search_term = "", base_path: TRY_PATH)
-    @search_term = search_term.gsub(/\s+/, '-')
+    if search_term =~ /\A(https?:|git@).*\.git\z/
+      @git_url_buffer = search_term
+      @search_term = ""
+    else
+      @git_url_buffer = ""
+      @search_term = search_term.gsub(/\s+/, '-')
+    end
     @cursor_pos = 0
     @scroll_offset = 0
     @input_buffer = @search_term
-    @git_url_buffer = ""
     @active_input = :search
     @selected = nil
     @term_width = 80
@@ -114,7 +114,7 @@ class TrySelector
     score = 0.0
 
     # generally we are looking for default date-prefixed directories
-    if text.start_with?(/---/)
+    if text.start_with?(/2025-08-13-/) # This is a unicode representation of the date string, which is not ideal. It should be a literal string. 
       score += 2.0
     end
 
@@ -207,9 +207,9 @@ class TrySelector
         break if @selected
       when "\x7F", "\b"  # Backspace
         if @active_input == :search
-            @input_buffer = @input_buffer[0...-1] if @input_buffer.length > 0
+            @input_buffer = @input_buffer[0...@input_buffer.length - 1] if @input_buffer.length > 0
         else
-            @git_url_buffer = @git_url_buffer[0...-1] if @git_url_buffer.length > 0
+            @git_url_buffer = @git_url_buffer[0...@git_url_buffer.length - 1] if @git_url_buffer.length > 0
         end
         @cursor_pos = 0
       when "\x03", "\e"  # Ctrl-C or ESC
@@ -217,7 +217,7 @@ class TrySelector
         break
       when String
         # Only accept printable characters, not escape sequences
-        if key.length == 1 && key =~ /[a-zA-Z0-9\-_\. ]/
+        if key.length == 1 && key =~ /[a-zA-Z0-9\-_\.\/:@]/ 
             if @active_input == :search
                 @input_buffer += key
             else
@@ -534,6 +534,13 @@ class TrySelector
   end
 end
 
+require 'io/console'
+require 'time'
+require 'fileutils'
+require 'tmpdir'
+
+
+
 # Main execution with OptionParser subcommands
 if __FILE__ == $0
 
@@ -574,6 +581,7 @@ if __FILE__ == $0
   end
 
   def print_global_help
+    script_path = File.expand_path($0)
     ui_print <<~HELP
       {h1}try something!{text}
 
@@ -582,7 +590,7 @@ if __FILE__ == $0
       this tool is not meant to be used directly,
       but added to your ~/.zshrc or ~/.bashrc:
 
-        {highlight}eval "$(\#{$0} init ~/src/tries)"{text}
+        {highlight}eval "$(#{script_path} init ~/src/tries)"{text}
 
       {h2}Usage:{text}
         init [--path PATH]  # Initialize shell function for aliasing
@@ -646,7 +654,7 @@ if __FILE__ == $0
 
     if result
       parts = []
-      parts << "dir='#{result[:path]}'";
+      parts << "dir='#{result[:path]}'"
       case result[:type]
       when :mkdir
         parts << "mkdir -p \"$dir\""

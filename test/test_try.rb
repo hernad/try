@@ -1,47 +1,46 @@
-require 'tmpdir'
-require_relative '../lib/try_selector'
+require_relative 'test_helper'
+require 'try_selector'
 
-class TryTester
-  def run
-    Dir.mktmpdir do |tmpdir|
-      puts "Running tests in #{tmpdir}"
-      @base_path = tmpdir
-      test_create_new_directory
-      test_create_new_directory_with_git
-    end
+class TestTrySelector < Minitest::Test
+  def setup
+    @tmpdir = Dir.mktmpdir
+  end
+
+  def teardown
+    FileUtils.remove_entry @tmpdir
   end
 
   def test_create_new_directory
-    puts "  - Test: Create new directory"
-    selector = TrySelector.new("", base_path: @base_path)
+    selector = TrySelector.new("", base_path: @tmpdir)
     selector.instance_variable_set(:@input_buffer, "test-dir")
     result = selector.send(:handle_create_new)
 
     date_prefix = Time.now.strftime("%Y-%m-%d")
     final_name = "#{date_prefix}-test-dir"
-    expected_path = File.join(@base_path, final_name)
+    expected_path = File.join(@tmpdir, final_name)
 
-    if result[:type] == :mkdir && result[:path] == expected_path
-      puts "    - PASSED: Correct result returned"
-    else
-      puts "    - FAILED: Incorrect result returned"
-    end
+    assert_equal :mkdir, result[:type]
+    assert_equal expected_path, result[:path]
   end
 
   def test_create_new_directory_with_git
-    puts "  - Test: Create new directory with git"
-    selector = TrySelector.new("", base_path: @base_path)
+    selector = TrySelector.new("", base_path: @tmpdir)
     selector.instance_variable_set(:@git_url_buffer, "https://github.com/tobi/try.git")
     result = selector.send(:handle_create_new)
 
     date_prefix = Time.now.strftime("%Y-%m-%d")
     final_name = "#{date_prefix}-try"
-    expected_path = File.join(@base_path, final_name)
+    expected_path = File.join(@tmpdir, final_name)
 
-    if result[:type] == :mkdir_and_clone && result[:path] == expected_path && result[:git_url] == "https://github.com/tobi/try.git"
-      puts "    - PASSED: Correct result returned"
-    else
-      puts "    - FAILED: Incorrect result returned"
-    end
+    assert_equal :mkdir_and_clone, result[:type]
+    assert_equal expected_path, result[:path]
+    assert_equal "https://github.com/tobi/try.git", result[:git_url]
+  end
+
+  def test_git_url_as_command_line_parameter
+    selector = TrySelector.new("https://github.com/tobi/try.git", base_path: @tmpdir)
+    
+    assert_equal "https://github.com/tobi/try.git", selector.instance_variable_get(:@git_url_buffer)
+    assert_equal "", selector.instance_variable_get(:@search_term)
   end
 end

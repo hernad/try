@@ -59,8 +59,11 @@
           
           installPhase = ''
             mkdir -p $out/bin
+            # Run the assemble script to generate try.rb
+            ${pkgs.ruby}/bin/ruby script/assemble_try.rb
             cp try.rb $out/bin/try
             chmod +x $out/bin/try
+            cp -r lib $out/bin/
           '';
           
           meta = with pkgs.lib; {
@@ -71,10 +74,29 @@
             platforms = platforms.unix;
           };
         };
+
+        packages.test = pkgs.stdenv.mkDerivation {
+          name = "try-test";
+          src = ./.;
+          buildInputs = [ self'.packages.default pkgs.ruby pkgs.rake ];
+          phases = [ "installPhase" ];
+          installPhase = ''
+            mkdir -p $out/bin
+            echo "#!/bin/sh" > $out/bin/test
+            echo "rake test" >> $out/bin/test
+            chmod +x $out/bin/test
+          '';
+        };
         
-        apps.default = {
-          type = "app";
-          program = "${self'.packages.default}/bin/try";
+        apps = {
+          default = {
+            type = "app";
+            program = "${self'.packages.default}/bin/try";
+          };
+          test = {
+            type = "app";
+            program = "${self'.packages.test}/bin/test";
+          };
         };
       };
     };

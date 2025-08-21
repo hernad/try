@@ -2,11 +2,16 @@ class TrySelector
   TRY_PATH = ENV['TRY_PATH'] || File.expand_path("~/src/tries")
 
   def initialize(search_term = "", base_path: TRY_PATH)
-    @search_term = search_term.gsub(/\s+/, '-')
+    if search_term =~ /\A(https?:|git@).*\.git\z/
+      @git_url_buffer = search_term
+      @search_term = ""
+    else
+      @git_url_buffer = ""
+      @search_term = search_term.gsub(/\s+/, '-')
+    end
     @cursor_pos = 0
     @scroll_offset = 0
     @input_buffer = @search_term
-    @git_url_buffer = ""
     @active_input = :search
     @selected = nil
     @term_width = 80
@@ -200,9 +205,9 @@ class TrySelector
         break if @selected
       when "\x7F", "\b"  # Backspace
         if @active_input == :search
-            @input_buffer = @input_buffer[0...-1] if @input_buffer.length > 0
+            @input_buffer = @input_buffer[0...@input_buffer.length - 1] if @input_buffer.length > 0
         else
-            @git_url_buffer = @git_url_buffer[0...-1] if @git_url_buffer.length > 0
+            @git_url_buffer = @git_url_buffer[0...@git_url_buffer.length - 1] if @git_url_buffer.length > 0
         end
         @cursor_pos = 0
       when "\x03", "\e"  # Ctrl-C or ESC
@@ -210,7 +215,7 @@ class TrySelector
         break
       when String
         # Only accept printable characters, not escape sequences
-        if key.length == 1 && key =~ /[a-zA-Z0-9\-_\. ]/
+        if key.length == 1 && key =~ /[a-zA-Z0-9\-_\.\/:@]/ 
             if @active_input == :search
                 @input_buffer += key
             else
@@ -302,10 +307,11 @@ class TrySelector
           # Render the separator (very faint)
           separator_matches = !@input_buffer.empty? && @input_buffer.include?('-')
           if separator_matches
-            ui_print "{highlight}-{text}"
+            ui_print "{highlight}-"
           else
-            ui_print "{dim_text}-{text}"
+            ui_print "{dim_text}-"
           end
+          ui_print "{text}"
 
           # Render the name part with match highlighting
           if !@input_buffer.empty?

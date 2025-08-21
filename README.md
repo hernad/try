@@ -182,3 +182,14 @@ MIT - Do whatever you want with it.
 *Built for developers with ADHD by developers with ADHD.*
 
 *Your experiments deserve a home.* 🏠
+
+## Testing
+
+This project uses Minitest for testing.
+To run the tests, you can use the following command:
+
+```bash
+nix run .#test
+```
+
+This will run the tests defined in the `test` directory.
