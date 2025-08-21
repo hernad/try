@@ -97,7 +97,6 @@ class TrySelector
       score = calculate_score(try_dir[:basename], @input_buffer, try_dir[:ctime], try_dir[:mtime])
       try_dir.merge(score: score)
     end
-
     # Filter only if searching, otherwise show all
     if @input_buffer.empty?
       scored_tries.sort_by { |t| -t[:score] }
