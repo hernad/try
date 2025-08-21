@@ -93,10 +93,11 @@ eval "$(~/.local/try.rb init ~/src/tries)"
 ## Usage
 
 ```bash
-try                 # Browse all experiments
-try redis           # Jump to redis experiment or create new
-try new api         # Start with "2025-08-17-new-api"
-try --help          # See all options
+try                    # Browse all experiments
+try redis              # Jump to redis experiment or create new
+try git-repository-url # Create experiment directory, git-repostitory and jump into it    
+try new api            # Start with "2025-08-17-new-api"
+try --help             # See all options
 ```
 
 ### Keyboard Shortcuts
@@ -126,16 +127,6 @@ nix run github:tobi/try
 nix run github:tobi/try -- --help
 nix run github:tobi/try init ~/my-tries
 ```
-
-## Git Integration
-
-`try` now offers experimental integration with Git. You can quickly clone a Git repository into your `TRY_PATH` and immediately `try` it.
-
-```bash
-try git clone <repository-url>
-```
-
-This will clone the repository into a new directory within your `TRY_PATH` (e.g., `~/src/tries/2025-08-21-repo-name`) and then navigate you into it.
 
 ### Home Manager
 
