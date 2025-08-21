@@ -1,5 +1,11 @@
 #!/usr/bin/env ruby
 
+require 'io/console'
+require 'time'
+require 'fileutils'
+require 'tmpdir'
+## Removed optparse; we'll manually parse CLI args
+
 class TrySelector
   TRY_PATH = ENV['TRY_PATH'] || File.expand_path("~/src/tries")
 
@@ -99,7 +105,6 @@ class TrySelector
       score = calculate_score(try_dir[:basename], @input_buffer, try_dir[:ctime], try_dir[:mtime])
       try_dir.merge(score: score)
     end
-
     # Filter only if searching, otherwise show all
     if @input_buffer.empty?
       scored_tries.sort_by { |t| -t[:score] }
@@ -534,7 +539,7 @@ class TrySelector
   end
 end
 
-require 'io/console'
+
 require 'time'
 require 'fileutils'
 require 'tmpdir'
